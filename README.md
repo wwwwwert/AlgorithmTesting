@@ -1,4 +1,4 @@
-# Algorithm Course Tesing System
+# Algorithm Course Testing System
 
 ## Project description
 
