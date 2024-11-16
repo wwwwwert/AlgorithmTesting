@@ -35,7 +35,8 @@ def get_tests(task_path: Path):
         return tests
     
     for test in tests_dir.iterdir():
-        tests.append(test)
+        if 'test' in test.name:
+            tests.append(test)
     tests.sort(key=lambda x: int(str(x).split('_')[1]))
     return tests
 
@@ -91,7 +92,6 @@ def test_case(
 
 
 def run_tests(
-    task_path: Path,
     tests: List[Path], 
     verbose: bool=False, 
     dry_run: bool=False
@@ -115,6 +115,8 @@ def run_tests(
                 pass
             elif test_result == 'WA':
                 wa_count += 1
+                if not dry_run:
+                    break
             elif test_result == 'RE':
                 wa_count += 1
                 if not dry_run:
@@ -138,7 +140,6 @@ def main(task_path: str, verbose: bool=False, dry_run: bool=False):
         return
 
     run_tests(
-        task_path,
         tests, 
         verbose, 
         dry_run
