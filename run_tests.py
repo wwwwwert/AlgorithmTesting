@@ -115,10 +115,12 @@ def run_tests(
                 pass
             elif test_result == 'WA':
                 wa_count += 1
+                print(f'WA on test {test.name}')
                 if not dry_run:
                     break
             elif test_result == 'RE':
                 wa_count += 1
+                print(f'RE on test {test.name}')
                 if not dry_run:
                     break
 
