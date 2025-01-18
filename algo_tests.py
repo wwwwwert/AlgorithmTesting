@@ -193,13 +193,13 @@ if __name__ == "__main__":
         '-s',
         '--skip-compiler-checks', 
         action=argparse.BooleanOptionalAction,
-        help="Compile program without necessary checks and sanitizers.",
+        help="Compile program without necessary checks and sanitizers",
     )
     args.add_argument(
         '-d',
         '--dry-run', 
         action=argparse.BooleanOptionalAction,
-        help="Skip output check. Testing would not stop if WA occures.",
+        help="Skip output check. Testing would not stop if WA occures",
     )
 
     args = args.parse_args()
