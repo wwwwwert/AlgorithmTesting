@@ -179,11 +179,9 @@ def main(task_path: str, verbose: bool=False, skip_compiler_checks: bool=False, 
 if __name__ == "__main__":
     args = argparse.ArgumentParser(description="Run tests for task")
     args.add_argument(
-        "-t",
-        "--task",
-        default=None,
+        "task",
         type=str,
-        help="task directory path",
+        help="Task directory path",
     )
     args.add_argument(
         '-v',
