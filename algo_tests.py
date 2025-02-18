@@ -71,7 +71,8 @@ def test_case(
     input_file: str,
     output_file: str,
     true_output_file: str,
-    checker
+    checker,
+    time_limit: float=1.0
 ):
     bin_path = test_path.parent.parent / 'main'
 
@@ -85,10 +86,16 @@ def test_case(
                 ]), '\n'
             )
 
-    exit_code = subprocess.run(
-        [f"./{bin_path} <{input_file} >{output_file}"],
-        shell=True
-    ).returncode
+    try:
+        exit_code = subprocess.run(
+            [f"./{bin_path} <{input_file} >{output_file}"],
+            shell=True,
+            timeout=time_limit
+        ).returncode
+    except subprocess.TimeoutExpired:
+        if verbose:
+            print(f'Time limit exceeded ({time_limit}s)')
+        return 'TL'
 
     if exit_code != 0:
         if verbose:
@@ -121,8 +128,17 @@ def run_tests(
     checker,
     verbose: bool=False, 
     dry_run: bool=False,
+    time_limit: float=1.0,
+    start_from: int=1,
+    end_at: int=None
 ):
     passed_count = 0
+    
+    if end_at is None:
+        end_at = len(tests)
+        
+    tests = tests[start_from-1:end_at]
+    
     with tempfile.TemporaryDirectory() as dir:
         for test in tqdm(tests, desc='Running tests'):
             output_file = str(Path(dir) / 'output.txt')
@@ -136,6 +152,7 @@ def run_tests(
                 output_file,
                 true_output_file,
                 checker,
+                time_limit
             )
 
             if test_result == 'OK':
@@ -148,6 +165,10 @@ def run_tests(
                 print(f'RE on test {test.name}')
                 if not dry_run:
                     break
+            elif test_result == 'TL':
+                print(f'TL on test {test.name}')
+                if not dry_run:
+                    break
 
     if passed_count == len(tests):
         print('All tests passed')
@@ -155,7 +176,7 @@ def run_tests(
         print(passed_count, '/', len(tests), 'tests passed')
 
 
-def main(task_path: str, verbose: bool=False, skip_compiler_checks: bool=False, dry_run: bool=False):
+def main(task_path: str, verbose: bool=False, skip_compiler_checks: bool=False, dry_run: bool=False, time_limit: float=1.0, start_from: int=1, end_at: int=None):
     task_path = Path(task_path)
 
     if not compile(task_path, skip_compiler_checks):
@@ -173,6 +194,9 @@ def main(task_path: str, verbose: bool=False, skip_compiler_checks: bool=False, 
         checker,
         verbose, 
         dry_run,
+        time_limit,
+        start_from,
+        end_at
     )
 
 
@@ -201,15 +225,33 @@ if __name__ == "__main__":
         action=argparse.BooleanOptionalAction,
         help="Skip output check. Testing would not stop if WA occures",
     )
+    args.add_argument(
+        '--time-limit',
+        type=float,
+        default=1.0,
+        help="Time limit for each test in seconds (default: 1.0)",
+    )
+    args.add_argument(
+        '--start-from',
+        type=int,
+        default=1,
+        help="Start testing from specific test number (default: 1)",
+    )
+    args.add_argument(
+        '--end-at',
+        type=int,
+        default=None,
+        help="End testing at specific test number (default: last test)",
+    )
 
     args = args.parse_args()
 
     # slant
-    print("""    ___    __          ______          __      
+    print(r"""    ___    __          ______          __      
    /   |  / /___ _____/_  __/__  _____/ /______
   / /| | / / __ `/ __ \/ / / _ \/ ___/ __/ ___/
  / ___ |/ / /_/ / /_/ / / /  __(__  ) /_(__  ) 
 /_/  |_/_/\__, /\____/_/  \___/____/\__/____/  
          /____/                                """, end='\n\n')
     
-    main(args.task, args.verbose, args.skip_compiler_checks, args.dry_run)
+    main(args.task, args.verbose, args.skip_compiler_checks, args.dry_run, args.time_limit, args.start_from, args.end_at)
